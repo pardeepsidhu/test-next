@@ -90,7 +90,7 @@ const getUsers = async(_id)=>{
     let result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${_id}`);
     result = await result.json();
     console.log(result)
-    if(!result){
+    if(result==='Not found'){
       redirect("/users")
       return;
     }
