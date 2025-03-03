@@ -20,14 +20,7 @@ import { redirect } from "next/navigation"
 export default function Profile(props) {
   
   const [loading,setLoading]=useState(true)
-  const [profileData,setProfileData]=useState({
-    "_id": '',
-    "name": "",
-    "title": "",
-    "image": "",
-    "bio": "",
-    "skills": [""]
-  });
+  const [profileData,setProfileData]=useState({});
 
  useEffect(()=>{  
   let getData = async()=>{
@@ -52,27 +45,37 @@ export default function Profile(props) {
         <div className="image-box">
        {  loading ?
          <Loader2 className="h-40 w-40 animate-spin text-cyan-400" /> :
-        <img className="image" src={profileData.image} alt={profileData.name} />
+        <img className="image" src={profileData.companyProfile} alt={profileData.name} />
          }
         </div>
-   { !loading && <>    <CardTitle><strong>{profileData.name}</strong></CardTitle>
-        <CardDescription className={"text-black"}>{profileData.title}</CardDescription>
+   { !loading && <>    <CardTitle><strong>name placeholder</strong></CardTitle>
+        <CardDescription className={"text-black"}>{profileData.jobTitle}</CardDescription>
         </> }
+       
       </CardHeader>
      
-      <hr />
-      
-   { !loading && <>  <CardContent>
      
+      
+   { !loading && <>  <CardContent className={"card-content"}>
+   <hr />
         <div className="bio-box">
-          <strong>Bio</strong>: {profileData.bio}
+          <strong>Company</strong> : {profileData.companyName}
         </div>
         <div className="bio-box">
+          <strong>Description</strong> : {profileData.description}
+        </div>
+        <div className="bio-box">
+          <strong>Locations</strong> : {profileData.location}
+        </div>
+        <div className="bio-box">
+          <strong>Type</strong> : {profileData.type}
+        </div>
+        {/* <div className="bio-box">
           <strong>Skills</strong>: {profileData.skills.toString().replaceAll(","," , ")}
-        </div>
+        </div> */}
       </CardContent>  
       
-      <CardFooter className="flex footer">
+      <CardFooter className="flex footer card-content">
         <Button onClick={handleContact} className="contact-button">Contact</Button>
       </CardFooter>
       </> }
@@ -84,16 +87,16 @@ export default function Profile(props) {
 const getUsers = async(_id)=>{
   try {
    
-    let result = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/users/${_id}`);
+    let result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${_id}`);
     result = await result.json();
-    // 
-    if(result.error){
+    console.log(result)
+    if(!result){
       redirect("/users")
       return;
     }
-    return result.user;
+    return result;
   } catch (error) {
- 
+    console.log(error)
     redirect("/users")
   }
 }

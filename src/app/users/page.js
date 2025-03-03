@@ -6,14 +6,10 @@ import { Separator } from "@/components/ui/separator";
 
 async function getUsers(){
     try {
-        let result = await fetch(`${process.env.NEXT_PUBLIC_BACK_END_URL}/api/users`);
+        let result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs`);
         result = await result.json();
-
-        if(result.error){
-            alert(result.error)
-            return []
-        }
-        return result.users;
+        console.log(result)
+        return result;
     } catch (error) {
        
         return []
@@ -22,11 +18,11 @@ async function getUsers(){
 
 
 export default function Users() {
-    const [users,setUsers]=useState([]);
+    const [profiles,setProfiles]=useState([]);
     useEffect(()=>{
         const fetchUsers = async()=>{
-            let users = await getUsers();
-            setUsers(users)
+            let result = await getUsers();
+            setProfiles(result)
         }
         fetchUsers()
     },[])
@@ -38,10 +34,10 @@ export default function Users() {
     <ScrollArea className="h-72 w-48 rounded-md border">
       <div className="p-4">
         <span className="mb-4 text-sm font-medium leading-none">users</span>
-        {users.map((user) => (
-          <div key={user._id}>
+        {profiles.map((profile) => (
+          <div key={profile.id}>
             <div  className="text-sm">
-            <Link href={`/users/${user._id}`}>{user.name}</Link>
+            <Link href={`/users/${profile.id}`}>{profile.companyName}</Link>
             </div>
             <Separator className="my-2" />
           </div>
@@ -52,13 +48,13 @@ export default function Users() {
 
 
 
-        <div >
+        {/* <div >
             {users.map((user)=>{
                 return <div key={user._id}>
                   
                     </div>
             })}
-        </div>
+        </div> */}
     </div>
   )
   

@@ -73,3 +73,6 @@
     display: flex;
     justify-content: flex-start;
   }
+.card-content{
+  padding-inline: 0px !important;
+}
