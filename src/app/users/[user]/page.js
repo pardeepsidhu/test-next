@@ -1,7 +1,9 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
-import { AwardIcon, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import "./profile.css";
 import { Button } from "../../../components/ui/button";
 import {
@@ -12,66 +14,74 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
-import { redirect } from "next/navigation";
 
-export default function Profile(props) {
-  const [loading, setLoading] = useState(true);
-  const [profileData, setProfileData] = useState(null);
+// ✅ Fetch profile data
+async function fetchProfile(userId) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${userId}`
+  );
+  if (!response.ok) throw new Error("User not found");
+  return response.json();
+}
 
+export default function Profile({ params }) {
+  const router = useRouter();
+  const [userId, setUserId] = useState(null);
+
+  // ✅ Handle params being a promise
   useEffect(() => {
-    const fetchData = async () => {
-      let params = await props.params; 
-      if (!params.user) {
-        redirect("/users");
-        return;
-      }
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${params.user}`);
-        const data = await response.json();
-        if (data === "Not found") {
-          redirect("/users");
-          return;
+    Promise.resolve(params)
+      .then((resolvedParams) => {
+        if (resolvedParams?.user) {
+          setUserId(resolvedParams.user);
+        } else {
+          router.push("/users");
         }
-        setProfileData(data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        redirect("/users");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+      })
+      .catch(() => router.push("/users"));
+  }, [params, router]);
 
-  const handleContact = () => {
-    console.log("Contact button clicked");
-  };
+  // ✅ Fetch profile using TanStack Query
+  const { data: profileData, isLoading, error } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: () => fetchProfile(userId),
+    enabled: !!userId, // Prevents query from running without userId
+    retry: false, 
+  });
+
+  // ✅ Redirect on error
+  useEffect(() => {
+    if (error) router.push("/users");
+  }, [error, router]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <Card className="w-[380px] bg-white shadow-md rounded-lg overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-5 text-center">
           <div className="image-box mx-auto">
-            {loading ? (
+            {isLoading ? (
               <Loader2 className="h-20 w-20 animate-spin text-white" />
             ) : (
               <img
                 className="profile-image rounded-full border-4 border-white"
                 src={profileData?.companyProfile}
-                alt={profileData?.name}
+                alt={profileData?.name || "Company"}
               />
             )}
           </div>
-          {!loading && (
+          {!isLoading && profileData && (
             <>
-              <CardTitle className="mt-3 text-lg font-semibold">{profileData?.name || "Name Not Available"}</CardTitle>
+              <CardTitle className="mt-3 text-lg font-semibold">
+                {profileData.name || "Name Not Available"}
+              </CardTitle>
               <CardDescription className="text-white text-sm">
-                {profileData?.jobTitle || "Job Title Not Available"}
+                {profileData.jobTitle || "Job Title Not Available"}
               </CardDescription>
             </>
           )}
         </CardHeader>
-        {!loading && profileData && (
+
+        {!isLoading && profileData && (
           <>
             <CardContent className="p-4">
               <div className="bio-box py-2">
@@ -88,7 +98,10 @@ export default function Profile(props) {
               </div>
             </CardContent>
             <CardFooter className="p-4 flex justify-end">
-              <Button onClick={handleContact} className="bg-blue-500 hover:bg-blue-600 hover:scale-105 text-white font-bold py-2 px-4 rounded-md shadow-md transition-transform duration-200">
+              <Button
+                onClick={() => console.log("Contact button clicked")}
+                className="bg-blue-500 hover:bg-blue-600 hover:scale-105 text-white font-bold py-2 px-4 rounded-md shadow-md transition-transform duration-200"
+              >
                 Contact
               </Button>
             </CardFooter>
