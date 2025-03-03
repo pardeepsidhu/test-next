@@ -8,7 +8,7 @@ async function getUsers(){
     try {
         let result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs`);
         result = await result.json();
-        console.log(result)
+        // console.log(result)
         return result;
     } catch (error) {
        
